@@ -8,12 +8,14 @@ import tempfile
 from datetime import datetime
 from pathlib import Path
 
+import pandas as pd
 import streamlit as st
 
 from spamshield.classifier import ModelLoadError, SpamClassifier
 from spamshield.config import ConfigError, Settings
 from spamshield.logging_setup import configure_logging
 from spamshield.mailbox_reader import MailboxError
+from spamshield.model_card import ModelCard
 from spamshield.presentation import EXAMPLES, describe, format_probability
 from spamshield.scanner import ScanResult, scan_mbox, to_safe_csv
 
@@ -114,7 +116,9 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-check_tab, scan_tab = st.tabs(["✉️  Check a message", "📥  Scan a mailbox"])
+check_tab, scan_tab, about_tab = st.tabs(
+    ["✉️  Check a message", "📥  Scan a mailbox", "📊  Accuracy"]
+)
 
 # ------------------------------------------------------------- check a message
 
@@ -275,3 +279,90 @@ with scan_tab:
                     file_name=f"spamshield-{datetime.now():%Y%m%d-%H%M}.csv",
                     mime="text/csv",
                 )
+
+# ------------------------------------------------------------- about the model
+
+
+def render_about(card: ModelCard) -> None:
+    metrics = card.test_metrics
+    st.markdown(
+        f"The current model is a **{card.model_display_name}** trained on "
+        f"{card.n_train + card.n_test:,} unique labelled text messages. It was tested on "
+        f"**{card.n_test:,} messages it never saw during training**:"
+    )
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Spam caught", f"{metrics.recall:.1%}", help="Recall: share of spam detected")
+    c2.metric(
+        "Flags that were right",
+        f"{metrics.precision:.1%}",
+        help="Precision: share of spam verdicts that really were spam",
+    )
+    c3.metric(
+        "False alarms",
+        f"{metrics.false_positive_rate:.1%}",
+        help="False-positive rate: share of normal messages wrongly flagged as spam",
+    )
+    c4.metric("F1 score", f"{metrics.f1:.3f}", help="Balance of precision and recall")
+
+    (tn, fp), (fn, tp) = metrics.confusion_matrix
+    left, right = st.columns([1, 1])
+    with left:
+        st.markdown("**Test results in detail**")
+        st.markdown(
+            f"""<div class="cm">
+              <div></div><div class="head">Predicted normal</div>
+              <div class="head">Predicted spam</div>
+              <div class="head">Actually normal</div><div class="good">{tn}</div>
+              <div class="bad">{fp}</div>
+              <div class="head">Actually spam</div><div class="bad">{fn}</div>
+              <div class="good">{tp}</div>
+            </div>""",
+            unsafe_allow_html=True,
+        )
+    with right:
+        st.markdown("**How the model was chosen**")
+        st.markdown(
+            f"{len(card.candidates)} model types were tuned with {card.cv_folds}-fold "
+            "cross-validation on the training data. The one with the best spam F1 score won."
+        )
+
+    comparison = pd.DataFrame(
+        {
+            "Model": [c.display_name for c in card.candidates],
+            "Cross-validated F1": [c.cv_f1 for c in card.candidates],
+            "Precision": [c.cv_precision for c in card.candidates],
+            "Recall": [c.cv_recall for c in card.candidates],
+        }
+    )
+    st.dataframe(
+        comparison,
+        hide_index=True,
+        width="stretch",
+        column_config={
+            "Cross-validated F1": st.column_config.ProgressColumn(
+                format="%.3f", min_value=0.0, max_value=1.0
+            ),
+            "Precision": st.column_config.NumberColumn(format="%.3f"),
+            "Recall": st.column_config.NumberColumn(format="%.3f"),
+        },
+    )
+
+    st.markdown("**Good to know**")
+    st.markdown(
+        "- The training data is the public *SMS Spam Collection*. Emails are longer and "
+        "worded differently, so treat results on emails as a strong hint, not a guarantee.\n"
+        "- Spam keeps changing. A model trained on older messages can miss new tricks.\n"
+        "- Everything runs locally in this app: messages are never sent to a third party "
+        "or saved."
+    )
+    st.caption(
+        f"Trained {card.trained_at[:10]} · scikit-learn {card.sklearn_version} · "
+        f"spam threshold {classifier.threshold:.0%}"
+    )
+
+
+with about_tab:
+    if card is None:
+        st.info("No model card is available for this model.")
+    else:
+        render_about(card)
