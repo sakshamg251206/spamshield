@@ -10,3 +10,7 @@ Gómez Hidalgo: 5,572 English SMS messages, each labelled `ham` (legitimate) or 
 
 Columns: `Category` (`ham`/`spam`) and `Message` (raw text). The file starts with a UTF-8
 byte-order mark, which the loader handles.
+
+The loader drops 414 exact duplicate messages before splitting, leaving 5,158 unique
+messages (642 spam, 4,516 ham). Without this step, copies of test messages appear in the
+training set and every metric looks better than it really is.

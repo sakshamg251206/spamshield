@@ -34,7 +34,10 @@ def file_sha256(path: Path) -> str:
 def load_dataset(path: Path) -> pd.DataFrame:
     """Read a ``Category,Message`` CSV and return clean ``text``/``label`` columns.
 
-    Rows with missing text or unknown labels are rejected.
+    Rows with missing text or unknown labels are rejected, and exact duplicate
+    messages are dropped. Duplicates matter: the SMS corpus contains hundreds of
+    repeated messages, and leaving them in lets copies of a test message sit in
+    the training set, which inflates every reported metric.
     """
     if not path.is_file():
         raise DatasetError(f"Dataset not found: {path}")
@@ -57,11 +60,13 @@ def load_dataset(path: Path) -> pd.DataFrame:
         )
     frame[LABEL_COLUMN] = labels.map(_LABEL_MAP).astype(int)
 
-    frame = frame.reset_index(drop=True)
+    before = len(frame)
+    frame = frame.drop_duplicates(subset=TEXT_COLUMN).reset_index(drop=True)
     frame[TEXT_COLUMN] = frame[TEXT_COLUMN].astype(str)
     logger.info(
-        "Loaded %d messages: %d spam, %d ham",
+        "Loaded %d messages (%d duplicates removed): %d spam, %d ham",
         len(frame),
+        before - len(frame),
         int((frame[LABEL_COLUMN] == SPAM).sum()),
         int((frame[LABEL_COLUMN] == HAM).sum()),
     )
