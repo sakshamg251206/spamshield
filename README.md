@@ -8,6 +8,8 @@
 ![Python](https://img.shields.io/badge/python-3.10%20–%203.13-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
+<img src="docs/images/check-message.png" alt="SpamShield flagging a prize-scam message as very likely spam and highlighting the phone number, link and money amount" width="820">
+
 </div>
 
 ---
@@ -16,6 +18,7 @@
 
 - [What is this?](#what-is-this)
 - [Features](#features)
+- [Screenshots](#screenshots)
 - [How it works](#how-it-works)
 - [Results](#results)
 - [Quick start](#quick-start)
@@ -68,6 +71,19 @@ data cleaning, honest evaluation, explainability, a usable interface, tests and 
 | 📊 **Transparent accuracy** | An in-app *Accuracy* tab shows held-out test results, the confusion matrix and how every candidate model scored. |
 | 🔒 **Private by design** | Everything runs locally. Messages are never stored or sent to a third party, and uploaded files are deleted as soon as they are parsed. |
 | 🧰 **CLI** | `spamshield train`, `spamshield predict` and `spamshield scan` for scripting and batch work. |
+
+## Screenshots
+
+| Scan a mailbox | Model accuracy |
+|---|---|
+| <img src="docs/images/scan-mailbox.png" alt="Mailbox scan results table sorted by spam probability" width="420"> | <img src="docs/images/accuracy.png" alt="Accuracy tab with test metrics, confusion matrix and model comparison" width="420"> |
+
+| Dark mode | Mobile |
+|---|---|
+| <img src="docs/images/dark-mode.png" alt="The app in dark mode" width="420"> | <img src="docs/images/mobile.png" alt="The app on a phone-sized screen" width="200"> |
+
+The scan screenshot uses `tests/fixtures/sample.mbox`, a small synthetic mailbox written
+for testing. It contains no real email.
 
 ## How it works
 
