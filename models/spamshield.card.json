@@ -1,0 +1,122 @@
+{
+  "model_name": "linear_svm",
+  "model_display_name": "Linear SVM (calibrated)",
+  "best_params": {
+    "C": 1,
+    "class_weight": null
+  },
+  "test_metrics": {
+    "accuracy": 0.9883720930232558,
+    "precision": 0.9461538461538461,
+    "recall": 0.9609375,
+    "f1": 0.9534883720930233,
+    "roc_auc": 0.9987296045353983,
+    "average_precision": 0.9924237579873894,
+    "confusion_matrix": [
+      [
+        897,
+        7
+      ],
+      [
+        5,
+        123
+      ]
+    ],
+    "false_positive_rate": 0.007743362831858407
+  },
+  "candidates": [
+    {
+      "name": "linear_svm",
+      "display_name": "Linear SVM (calibrated)",
+      "cv_f1": 0.955539111333016,
+      "cv_f1_std": 0.0113572520095228,
+      "cv_precision": 0.9703968982871138,
+      "cv_recall": 0.9417094993337141,
+      "best_params": {
+        "C": 1,
+        "class_weight": null
+      },
+      "fit_seconds": 1.61
+    },
+    {
+      "name": "logistic_regression",
+      "display_name": "Logistic Regression",
+      "cv_f1": 0.947777504016768,
+      "cv_f1_std": 0.00958908347552362,
+      "cv_precision": 0.9587037635433378,
+      "cv_recall": 0.937826004188083,
+      "best_params": {
+        "C": 10,
+        "class_weight": "balanced"
+      },
+      "fit_seconds": 2.71
+    },
+    {
+      "name": "knn",
+      "display_name": "k-Nearest Neighbours",
+      "cv_f1": 0.9210614064433222,
+      "cv_f1_std": 0.017791778077985338,
+      "cv_precision": 0.9850667408231368,
+      "cv_recall": 0.8658290500666286,
+      "best_params": {
+        "n_neighbors": 7,
+        "weights": "distance"
+      },
+      "fit_seconds": 1.56
+    },
+    {
+      "name": "random_forest",
+      "display_name": "Random Forest",
+      "cv_f1": 0.9041254540217167,
+      "cv_f1_std": 0.020536286036093233,
+      "cv_precision": 0.995505617977528,
+      "cv_recall": 0.8288787359604036,
+      "best_params": {
+        "class_weight": null,
+        "max_depth": 60
+      },
+      "fit_seconds": 14.87
+    },
+    {
+      "name": "naive_bayes",
+      "display_name": "Complement Naive Bayes",
+      "cv_f1": 0.8957796512498379,
+      "cv_f1_std": 0.013153395283944574,
+      "cv_precision": 0.8468710110753547,
+      "cv_recall": 0.9513992004568819,
+      "best_params": {
+        "alpha": 0.05
+      },
+      "fit_seconds": 0.89
+    },
+    {
+      "name": "decision_tree",
+      "display_name": "Decision Tree",
+      "cv_f1": 0.8940671106841551,
+      "cv_f1_std": 0.007677465045234587,
+      "cv_precision": 0.9320076642997386,
+      "cv_recall": 0.8618884446982676,
+      "best_params": {
+        "max_depth": null,
+        "min_samples_leaf": 1
+      },
+      "fit_seconds": 1.56
+    }
+  ],
+  "threshold": 0.5,
+  "trained_at": "2026-10-01T09:00:22+00:00",
+  "dataset_path": "data/sms_spam.csv",
+  "dataset_sha256": "ac6b02d338c56deffa119b5e63f8b346c251c6a717e54856d40f4482a9a3adde",
+  "n_train": 4126,
+  "n_test": 1032,
+  "n_spam": 642,
+  "n_ham": 4516,
+  "cv_folds": 5,
+  "model_sha256": "5eda4d3cdb68244208b0b93fd600e20c44b528de2db6adeb820d369fe728748e",
+  "sklearn_version": "1.9.1",
+  "python_version": "3.12.11",
+  "vocabulary_size": 6740,
+  "notes": [
+    "Trained on the SMS Spam Collection; email wording differs, so treat scores on long emails as indicative rather than definitive."
+  ]
+}
