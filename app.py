@@ -86,6 +86,12 @@ settings, classifier = startup()
 card = classifier.card
 
 
+def chips(signals: list[tuple[str, float]], tone: str) -> str:
+    return "".join(
+        f'<span class="chip chip-{tone}">{html.escape(token)}</span>' for token, _ in signals
+    )
+
+
 # -------------------------------------------------------------------- header
 
 trained_on = f"{card.n_train + card.n_test:,}" if card else "thousands of"
@@ -94,7 +100,7 @@ st.markdown(
     <div class="hero">
       <h1>🛡️ SpamShield</h1>
       <p>Not sure whether a message is a scam? Paste it here or upload a whole mailbox.
-      SpamShield tells you how likely it is to be spam.</p>
+      SpamShield tells you how likely it is to be spam and which words gave it away.</p>
     </div>
     <div class="steps">
       <div class="step"><b>1 · Paste or upload</b>
@@ -102,7 +108,7 @@ st.markdown(
       <div class="step"><b>2 · The model reads it</b>
         <span>A machine-learning model trained on {trained_on} labelled messages.</span></div>
       <div class="step"><b>3 · Get a clear answer</b>
-        <span>A spam probability and a plain-language verdict.</span></div>
+        <span>A spam probability, a verdict, and the words behind it.</span></div>
     </div>
     """,
     unsafe_allow_html=True,
@@ -136,6 +142,7 @@ with check_tab:
     if submitted and text.strip():
         with st.spinner("Analysing…"):
             prediction = classifier.predict(text)
+            signals = classifier.explain(text)
         verdict = describe(prediction, classifier.threshold)
         st.markdown(
             f'<div class="verdict tone-{verdict.tone}"><h3>{verdict.title}</h3>'
@@ -147,6 +154,26 @@ with check_tab:
             text=f"Spam probability: {format_probability(prediction.spam_probability)}",
         )
 
+        spammy = [(s.display, s.impact) for s in signals if s.impact > 0]
+        normal = [(s.display, s.impact) for s in signals if s.impact < 0]
+        left, right = st.columns(2)
+        with left:
+            st.markdown("**Looks like spam**")
+            st.markdown(
+                chips(spammy, "spam") or '<span class="muted">Nothing stood out.</span>',
+                unsafe_allow_html=True,
+            )
+        with right:
+            st.markdown("**Looks like a normal message**")
+            st.markdown(
+                chips(normal, "ham") or '<span class="muted">Nothing stood out.</span>',
+                unsafe_allow_html=True,
+            )
+        st.caption(
+            "Words are ranked by how much the verdict changes when each one is removed. "
+            "Links, phone numbers and money amounts are grouped, because their exact value "
+            "rarely matters."
+        )
     elif not text.strip():
         st.info("Your result will appear here. Nothing you paste is stored.", icon="💡")
 
