@@ -38,10 +38,19 @@ class Verdict:
     tone: str
 
 
+def format_probability(probability: float) -> str:
+    """Format a probability without overstating certainty (never "0%" or "100%")."""
+    if probability >= 0.995:
+        return ">99%"
+    if probability <= 0.005:
+        return "<1%"
+    return f"{probability:.0%}"
+
+
 def describe(prediction: Prediction, threshold: float = 0.5) -> Verdict:
     """Turn a prediction into a headline and one sentence a non-expert understands."""
     probability = prediction.spam_probability
-    percent = f"{probability:.0%}"
+    percent = format_probability(probability)
     if abs(probability - threshold) < 0.15:
         return Verdict(
             "Could go either way",
