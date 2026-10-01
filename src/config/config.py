@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 @dataclass
 class Config:
-    training_data_path: str = "data/dataset/dataset.csv"
+    training_data_path: str = "data/sms_spam.csv"
     validation_data_path: str = "data/dataset/All_mail_Including_Spam_and_Trash.mbox"
     OUTPUT_BASE_DIR: str = "outputs"
     model_path: str = "outputs/2026-04-10_00-14-19/models/SVM_model.pkl"
