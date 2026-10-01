@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 
 from spamshield.classifier import SpamClassifier
-from spamshield.config import DEFAULT_DATASET_PATH
+from spamshield.config import DEFAULT_DATASET_PATH, DEFAULT_MODEL_PATH
 from spamshield.training import train
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -37,3 +37,8 @@ def trained_model(tmp_path_factory: pytest.TempPathFactory, small_dataset: Path)
 @pytest.fixture(scope="session")
 def classifier(trained_model: Path) -> SpamClassifier:
     return SpamClassifier.load(trained_model)
+
+
+@pytest.fixture(scope="session")
+def shipped_classifier() -> SpamClassifier:
+    return SpamClassifier.load(DEFAULT_MODEL_PATH)
