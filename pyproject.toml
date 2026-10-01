@@ -25,6 +25,9 @@ dependencies = [
     "streamlit>=1.50",
 ]
 
+[project.scripts]
+spamshield = "spamshield.cli:main"
+
 [project.urls]
 Repository = "https://github.com/sakshamg251206/spamshield"
 
