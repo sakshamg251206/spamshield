@@ -9,6 +9,13 @@ from spamshield.classifier import SpamClassifier
 from spamshield.config import DEFAULT_DATASET_PATH
 from spamshield.training import train
 
+FIXTURES = Path(__file__).parent / "fixtures"
+
+
+@pytest.fixture(scope="session")
+def sample_mbox() -> Path:
+    return FIXTURES / "sample.mbox"
+
 
 @pytest.fixture(scope="session")
 def small_dataset(tmp_path_factory: pytest.TempPathFactory) -> Path:

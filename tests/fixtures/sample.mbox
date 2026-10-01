@@ -1,0 +1,89 @@
+From MAILER-DAEMON Thu Oct  1 08:50:00 2026
+From: alerts@secure-bank-verify.net
+To: me@example.com
+Date: Sat, 01 Mar 2025 09:00:00 +0000
+X-Gmail-Labels: Spam
+Subject: URGENT: account suspended
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Your account has been suspended. Verify your details now at http://secure-ban=
+k-verify.net or your card will be blocked. Call 09061701461.
+
+From MAILER-DAEMON Thu Oct  1 08:50:00 2026
+From: priya@example.com
+To: me@example.com
+Date: Sat, 01 Mar 2025 10:00:00 +0000
+X-Gmail-Labels: Inbox
+Subject: Dinner on Friday?
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+Hi! Are we still on for dinner on Friday? Let me know what time works for you.
+
+From MAILER-DAEMON Thu Oct  1 08:50:00 2026
+From: winner@prizes.example
+To: me@example.com
+Date: Sat, 01 Mar 2025 11:00:00 +0000
+X-Gmail-Labels: Category Promotions
+Subject: You WON a =?utf-8?q?=E2=82=AC500?= gift card!
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+<html><body><p>Congratulations! You WON a <b>&pound;500</b> gift card. Claim =
+your FREE prize now, text WIN to 87121.</p></body></html>
+
+From MAILER-DAEMON Thu Oct  1 08:50:00 2026
+From: team@example.org
+To: me@example.com
+Date: Sat, 01 Mar 2025 12:00:00 +0000
+X-Gmail-Labels: Category Updates
+Subject: Quarterly report draft
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============6019373146205313535=="
+
+--===============6019373146205313535==
+Content-Type: multipart/alternative; boundary="===============5832682208031867943=="
+
+--===============5832682208031867943==
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+Hi team, the report draft is in the shared folder. Please add comments by Thu=
+rsday. Thanks, Sam
+
+--===============5832682208031867943==
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+<p>Hi team, the report draft is in the shared folder. Please add comments by =
+Thursday. Thanks, Sam</p>
+
+--===============5832682208031867943==--
+
+--===============6019373146205313535==
+Content-Type: application/pdf
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="report.pdf"
+MIME-Version: 1.0
+
+JVBERi0xLjQgZmFrZQ==
+
+--===============6019373146205313535==--
+
+From MAILER-DAEMON Thu Oct  1 08:50:00 2026
+From: =cmd@evil.example
+To: me@example.com
+Date: Sat, 01 Mar 2025 13:00:00 +0000
+X-Gmail-Labels: Inbox
+Subject: =HYPERLINK("http://evil.example")
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+Formula injection test body.
+
