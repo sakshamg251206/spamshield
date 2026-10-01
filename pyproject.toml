@@ -1,18 +1,36 @@
 [project]
-name = "spam-e-mail-classification"
-version = "0.1.0"
-description = "Add your description here"
+name = "spamshield"
+version = "1.0.0"
+description = "Explainable spam detection for messages and mailboxes, built on scikit-learn and Streamlit."
 readme = "README.md"
-requires-python = ">=3.13"
-dependencies = [
-    "beautifulsoup4>=4.14.3",
-    "fastapi>=0.127.0",
-    "flask>=3.1.2",
-    "mailbox>=0.4",
-    "openpyxl>=3.1.5",
-    "pandas>=2.3.3",
-    "python-multipart>=0.0.21",
-    "scikit-learn>=1.8.0",
-    "streamlit>=1.52.2",
-    "uvicorn>=0.40.0",
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Saksham Garg" }]
+requires-python = ">=3.10"
+keywords = ["spam-detection", "machine-learning", "nlp", "scikit-learn", "streamlit"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Communications :: Email :: Filters",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
+dependencies = [
+    "beautifulsoup4>=4.12",
+    "joblib>=1.3",
+    "pandas>=2.1",
+    "scikit-learn>=1.5",
+    "streamlit>=1.50",
+]
+
+[project.urls]
+Repository = "https://github.com/sakshamg251206/spamshield"
+
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/spamshield"]
