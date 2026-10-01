@@ -43,3 +43,15 @@ jobs:
           python-version: ${{ matrix.python }}
       - run: uv sync --frozen
       - run: uv run pytest --cov --cov-report=term
+
+  docker:
+    name: Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t spamshield .
+      - name: Smoke-test the container
+        run: |
+          docker run -d --name app -p 8501:8501 spamshield
+          for i in $(seq 1 30); do curl -sf localhost:8501/_stcore/health && exit 0; sleep 1; done
+          docker logs app; exit 1
