@@ -21,6 +21,8 @@
 - [Quick start](#quick-start)
 - [Configuration](#configuration)
 - [Command-line usage](#command-line-usage)
+- [Testing and quality checks](#testing-and-quality-checks)
+- [Deployment](#deployment)
 - [Credits and licence](#credits-and-licence)
 
 ---
@@ -201,6 +203,49 @@ uv run spamshield train --only logistic_regression naive_bayes --cv-folds 3
 
 Training is deterministic (fixed random seeds), so rerunning it on the same data and
 library versions selects the same model with the same metrics.
+
+## Testing and quality checks
+
+```bash
+make check          # everything CI runs: lint, format check, type check, tests
+make test           # pytest with coverage (about 5 seconds)
+make lint           # ruff
+make typecheck      # mypy --strict
+```
+
+The 82 tests cover:
+
+- **Unit tests** for normalisation, dataset validation, configuration parsing, mailbox
+  parsing (RFC 2047 subjects, HTML-only emails, attachments, unknown charsets, non-mbox
+  files) and CSV-injection protection.
+- **Model tests** that train a small model end to end, check the model card, verify that a
+  tampered model file is refused, and guard the committed model's behaviour on known
+  examples.
+- **CLI tests** for every command, including error exit codes.
+- **UI tests** that drive the real Streamlit app headlessly with
+  [`AppTest`](https://docs.streamlit.io/develop/api-reference/app-testing): the empty state,
+  example buttons, both verdicts, the accuracy tab and the "model missing" error screen.
+
+Line coverage is about 96%. [GitHub Actions](.github/workflows/ci.yml) runs linting and
+type checks, runs the tests on Python 3.10–3.13, checks that `requirements.txt` matches
+`uv.lock`, and builds and health-checks the Docker image on every push and pull request.
+
+## Deployment
+
+**Docker** works on any host that runs containers (Render, Fly.io, Google Cloud Run, a VPS):
+
+```bash
+docker build -t spamshield .
+docker run -p 8501:8501 --env-file .env spamshield   # --env-file is optional
+```
+
+The image installs only runtime dependencies from the lockfile, runs as a non-root user and
+has a health check on `/_stcore/health`.
+
+**Streamlit Community Cloud** (free): push the repository to GitHub, create a new app at
+[share.streamlit.io](https://share.streamlit.io) and point it at `app.py`. It installs from
+`requirements.txt`, which includes this package. Set any configuration under
+*Settings → Secrets* as environment variables.
 
 ## Credits and licence
 
