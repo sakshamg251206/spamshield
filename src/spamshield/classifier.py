@@ -17,6 +17,7 @@ from sklearn.pipeline import Pipeline
 
 from spamshield.data import file_sha256
 from spamshield.model_card import ModelCard, card_path_for
+from spamshield.preprocessing import PLACEHOLDER_LABELS, normalize_text
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +42,21 @@ class Prediction:
     def confidence(self) -> float:
         """Probability of the predicted label, from 0.5 to 1."""
         return self.spam_probability if self.is_spam else 1 - self.spam_probability
+
+
+@dataclass(frozen=True)
+class Signal:
+    """A word whose presence pushed the prediction towards spam or ham."""
+
+    token: str
+    #: Change in the spam log-odds caused by this word; positive means spam-like.
+    #: Log-odds are used because probabilities saturate near 0 and 1, where
+    #: removing any single word barely moves them.
+    impact: float
+
+    @property
+    def display(self) -> str:
+        return PLACEHOLDER_LABELS.get(self.token, self.token)
 
 
 class SpamClassifier:
@@ -138,3 +154,35 @@ class SpamClassifier:
             else Prediction("ham", 0.0)
             for text, p in zip(texts, probabilities, strict=True)
         ]
+
+    def explain(self, text: str, *, top_k: int = 6, max_tokens: int = 80) -> list[Signal]:
+        """Find the words that most influenced the prediction for ``text``.
+
+        Works for any model: each distinct word is removed in turn and the
+        change in the spam log-odds is measured (leave-one-out). Signals are
+        returned strongest first.
+        """
+        words = normalize_text(text[: self.max_chars]).split()
+        if not words:
+            return []
+        vocabulary = self.pipeline.named_steps["tfidf"].vocabulary_
+        unique = [w for w in dict.fromkeys(words) if w in vocabulary][:max_tokens]
+        if not unique:
+            return []
+
+        variants = [" ".join(word for word in words if word != removed) for removed in unique]
+        probabilities = self.pipeline.predict_proba([" ".join(words), *variants])[:, 1]
+        baseline, *without = _log_odds(probabilities)
+        signals = [
+            Signal(token, float(baseline - value))
+            for token, value in zip(unique, without, strict=True)
+        ]
+        signals = [s for s in signals if abs(s.impact) >= 0.05]
+        signals.sort(key=lambda s: abs(s.impact), reverse=True)
+        return signals[:top_k]
+
+
+def _log_odds(probabilities: np.ndarray) -> np.ndarray:
+    clipped = np.clip(probabilities, 1e-9, 1 - 1e-9)
+    result: np.ndarray = np.log(clipped / (1 - clipped))
+    return result
