@@ -6,6 +6,7 @@ import pytest
 
 from spamshield.classifier import ModelLoadError, Prediction, SpamClassifier
 from spamshield.model_card import card_path_for
+from spamshield.presentation import EXAMPLES
 
 
 def copy_model(src: Path, dest_dir: Path) -> Path:
@@ -102,3 +103,21 @@ def test_load_rejects_corrupt_card(trained_model: Path, tmp_path: Path) -> None:
     card_path_for(model).write_text("{not json")
     with pytest.raises(ModelLoadError, match="unreadable"):
         SpamClassifier.load(model)
+
+
+class TestShippedModel:
+    """Guards the model committed to the repository, which the app serves."""
+
+    @pytest.mark.parametrize("name", ["Prize scam", "Fake bank alert"])
+    def test_flags_spam_examples(self, shipped_classifier: SpamClassifier, name: str) -> None:
+        assert shipped_classifier.predict(EXAMPLES[name]).is_spam
+
+    @pytest.mark.parametrize("name", ["Friend", "Work update"])
+    def test_passes_normal_examples(self, shipped_classifier: SpamClassifier, name: str) -> None:
+        assert not shipped_classifier.predict(EXAMPLES[name]).is_spam
+
+    def test_card_reports_held_out_metrics(self, shipped_classifier: SpamClassifier) -> None:
+        card = shipped_classifier.card
+        assert card is not None
+        assert card.test_metrics.f1 > 0.9
+        assert card.candidates[0].name == card.model_name
