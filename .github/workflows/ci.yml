@@ -25,6 +25,8 @@ jobs:
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run mypy
+      - name: requirements.txt matches uv.lock
+        run: uv export --frozen --no-dev --no-hashes --quiet -o requirements.txt && git diff --exit-code requirements.txt
 
   test:
     name: Tests (Python ${{ matrix.python }})
