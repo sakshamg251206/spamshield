@@ -14,7 +14,7 @@ from spamshield.classifier import ModelLoadError, SpamClassifier
 from spamshield.config import ConfigError, Settings
 from spamshield.logging_setup import configure_logging
 from spamshield.mailbox_reader import MailboxError
-from spamshield.presentation import describe, format_probability
+from spamshield.presentation import EXAMPLES, describe, format_probability
 from spamshield.scanner import ScanResult, scan_mbox, to_safe_csv
 
 logger = logging.getLogger("spamshield.app")
@@ -115,6 +115,14 @@ check_tab, scan_tab = st.tabs(["✉️  Check a message", "📥  Scan a mailbox"
 with check_tab:
     if "message" not in st.session_state:
         st.session_state.message = ""
+
+    def use_example(name: str) -> None:
+        st.session_state.message = EXAMPLES[name]
+
+    st.markdown("**Try an example**, or paste your own message below.")
+    example_columns = st.columns(len(EXAMPLES))
+    for column, name in zip(example_columns, EXAMPLES, strict=True):
+        column.button(name, on_click=use_example, args=(name,), width="stretch")
 
     text = st.text_area(
         "Message",
