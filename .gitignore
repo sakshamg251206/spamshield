@@ -1,47 +1,41 @@
-# Byte-compiled / optimized / DLL files
+# Python
 __pycache__/
 *.py[cod]
-*$py.class
+*.egg-info/
+build/
+dist/
 
 # Virtual environments
 .venv/
 venv/
-ENV/
-.env.example
-.env.production
-# IDE
+
+# Tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Local configuration (copy .env.example to .env)
+.env
+.env.*
+!.env.example
+
+# Personal data and run outputs: never commit real mailboxes or scan results
+*.mbox
+!tests/fixtures/*.mbox
+spamshield-*.csv
+logs/
+
+# Temporary model files written during training
+models/*.tmp
+
+# Editors and OS
 .vscode/
 .idea/
-
-# Logs
-logs/
-*.mbox
-
-# Frontend / Node.js
-frontend/node_modules/
-frontend/dist/
-frontend/.vite/
-frontend/build/
-
-# Dependencies
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-# Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# OS files
 .DS_Store
 Thumbs.db
-
-# Temporary files
-*.tmp
-*.temp
-*.log
