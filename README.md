@@ -8,7 +8,9 @@
 ![Python](https://img.shields.io/badge/python-3.10%20–%203.13-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-<img src="docs/images/check-message.png" alt="SpamShield flagging a prize-scam message as very likely spam and highlighting the phone number, link and money amount" width="820">
+<video src="https://github.com/sakshamg251206/spamshield/raw/main/brag-output/brag.mp4" poster="https://github.com/sakshamg251206/spamshield/raw/main/brag-output/brag.jpg" controls muted width="820">
+  <a href="brag-output/brag.mp4"><img src="docs/images/check-message.png" alt="SpamShield flagging a prize-scam message as very likely spam and highlighting the phone number, link and money amount" width="820"></a>
+</video>
 
 </div>
 
