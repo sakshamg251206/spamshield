@@ -23,6 +23,10 @@
 - [Command-line usage](#command-line-usage)
 - [Testing and quality checks](#testing-and-quality-checks)
 - [Deployment](#deployment)
+- [Architecture](#architecture)
+- [Project structure](#project-structure)
+- [Technical decisions](#technical-decisions)
+- [Limitations and future work](#limitations-and-future-work)
 - [Credits and licence](#credits-and-licence)
 
 ---
@@ -246,6 +250,118 @@ has a health check on `/_stcore/health`.
 [share.streamlit.io](https://share.streamlit.io) and point it at `app.py`. It installs from
 `requirements.txt`, which includes this package. Set any configuration under
 *Settings → Secrets* as environment variables.
+
+## Architecture
+
+```mermaid
+flowchart TB
+    subgraph UI["Interfaces"]
+        APP["app.py<br/>Streamlit web app"]
+        CLI["cli.py<br/>spamshield train · predict · scan"]
+    end
+    subgraph Core["spamshield package"]
+        CFG["config.py<br/>env-var settings"]
+        CLF["classifier.py<br/>load · verify · predict · explain"]
+        SCN["scanner.py<br/>batch scan · safe CSV"]
+        MBX["mailbox_reader.py<br/>parse .mbox"]
+        PRE["preprocessing.py<br/>normalise text"]
+        PRS["presentation.py<br/>plain-language verdicts"]
+        TRN["training.py<br/>select · evaluate · save"]
+        DATA["data.py<br/>load + validate CSV"]
+        CARD["model_card.py<br/>metadata + checksum"]
+    end
+    subgraph Files["Artifacts"]
+        CSV[("data/sms_spam.csv")]
+        MODEL[("models/spamshield.joblib<br/>+ .card.json")]
+    end
+
+    APP --> CLF & SCN & PRS & CFG
+    CLI --> CLF & SCN & TRN & CFG
+    SCN --> MBX & CLF
+    CLF --> CARD
+    CLF -. "loads" .-> MODEL
+    TRN --> DATA --> CSV
+    TRN --> CARD
+    TRN -. "writes" .-> MODEL
+    TRN --> PRE
+    MODEL -. "pipeline calls" .-> PRE
+```
+
+The web app and CLI are thin layers over a small, typed, fully tested package. Training and
+inference share one scikit-learn `Pipeline`, so text processing is identical in both. The
+original project fitted the vectoriser separately and cleaned text differently at prediction
+time.
+
+## Project structure
+
+```
+spamshield/
+├── app.py                      # Streamlit web app (UI only, logic lives in the package)
+├── src/spamshield/
+│   ├── classifier.py           # SpamClassifier: load + verify model, predict, explain
+│   ├── training.py             # candidate models, grid search, evaluation, saving
+│   ├── model_card.py           # metadata saved with every model (metrics, checksum)
+│   ├── preprocessing.py        # text normalisation used inside the pipeline
+│   ├── data.py                 # dataset loading, validation, de-duplication
+│   ├── mailbox_reader.py       # .mbox parsing: headers, bodies, HTML, charsets
+│   ├── scanner.py              # whole-mailbox scans and CSV-injection-safe export
+│   ├── presentation.py         # plain-language verdicts and demo examples
+│   ├── config.py               # settings from environment variables
+│   ├── logging_setup.py
+│   └── cli.py                  # `spamshield` command
+├── models/
+│   ├── spamshield.joblib       # trained pipeline (~140 KB)
+│   └── spamshield.card.json    # how it was trained and how well it scored
+├── data/
+│   ├── sms_spam.csv            # SMS Spam Collection (CC BY 4.0)
+│   └── README.md               # dataset source, licence, citation
+├── tests/                      # pytest suite (+ fixtures/sample.mbox, synthetic)
+├── notebooks/
+│   └── 01-model-exploration.ipynb   # the original exploration, kept for history
+├── docs/images/                # README screenshots
+├── .github/workflows/ci.yml    # lint, types, tests (3.10–3.13), Docker build
+├── .streamlit/config.toml      # upload limit, theme
+├── Dockerfile · .dockerignore
+├── Makefile                    # make install / run / test / check / train
+├── pyproject.toml · uv.lock    # dependencies and tool configuration
+├── requirements.txt            # generated from uv.lock for pip-only platforms
+└── .env.example                # every configuration option, documented
+```
+
+## Technical decisions
+
+| Decision | Why |
+|---|---|
+| **Spam is the positive class (1).** | The original encoded spam as 0, so `scoring="f1"` optimised for detecting *normal* messages. Now precision, recall and F1 describe spam detection, which is what matters. |
+| **Deduplicate before splitting.** | 414 messages appear more than once. Leaving them in puts copies of test messages in the training set and inflates every metric. |
+| **Select by cross-validation and test once.** | Picking the model with the best *test* score (as before) leaks test information into the choice. The test split now plays no part in selection. |
+| **One `Pipeline` for vectoriser and model.** | The vectoriser is refitted inside every CV fold (no vocabulary leakage) and training and inference can't drift apart. |
+| **No stop-word list.** | scikit-learn's English list removes "call", "now" and "get", which are strong spam signals. Cross-validated F1 rose from 0.920 to 0.936 with logistic regression. |
+| **Placeholder normalisation.** | Replacing URLs, phone numbers and amounts (together with sublinear TF) lifted cross-validated F1 from 0.936 to 0.948 in the same comparison. |
+| **Unigrams, not bigrams.** | Bigrams scored within noise (+0.001) and single-word features keep explanations exact. |
+| **Calibrated probabilities.** | The original SVM had no `predict_proba`, so the confidence score never appeared. Every candidate now outputs a probability, and the SVM is calibrated. |
+| **Leave-one-out explanations in log-odds.** | Works with any model type. Log-odds are used because probabilities saturate near 0% and 100%, where removing one word barely moves them. |
+| **Checksum-verified model loading.** | joblib and pickle files can run code when loaded. The loader refuses a model whose SHA-256 doesn't match its model card. |
+| **CSV-injection protection.** | Exported cells starting with `=`, `+`, `-` or `@` are prefixed so spreadsheets don't run them as formulas. Email subjects are attacker-controlled. |
+| **Streamlit kept; FastAPI and Flask removed.** | The original declared FastAPI, Flask, uvicorn and a bogus `mailbox` PyPI package (it's in the standard library) but used none of them. Streamlit is the right tool for this UI. |
+
+## Limitations and future work
+
+- **Trained on SMS, applied to email.** The only labelled data is the 2011 SMS Spam
+  Collection. Emails are longer, more formal and HTML-heavy, so email scores are a strong
+  hint rather than a verdict. The most valuable next step is retraining on a labelled email
+  corpus (e.g. Enron-Spam or SpamAssassin); the pipeline accepts any `Category,Message` CSV.
+- **Language and era.** English only. Spam tactics from 2011 differ from today's, such as
+  crypto scams and delivery-fee phishing.
+- **Text only.** Sender reputation, links' real destinations, attachments and email
+  authentication (SPF/DKIM) are ignored. Real filters combine all of these.
+- **Small spam sample.** 642 unique spam messages, so metrics carry roughly ±1–2 points
+  of uncertainty (see the CV standard deviations above).
+- **Explanations are local.** They show which words moved *this* prediction, not a
+  global truth about the model.
+- **Possible extensions:** an email-specific training set, threshold tuning from a
+  precision-recall curve, character n-grams for obfuscated words ("fr33"), and `.eml`
+  upload support.
 
 ## Credits and licence
 
