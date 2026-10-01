@@ -39,3 +39,6 @@ models/*.tmp
 .idea/
 .DS_Store
 Thumbs.db
+
+# /brag-slim scratch files (frames, fonts, scripts)
+brag-output/work/
