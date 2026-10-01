@@ -1,0 +1,18 @@
+[server]
+# Mailbox exports can be large, but anything bigger than this is better
+# scanned with the CLI (`spamshield scan`).
+maxUploadSize = 50
+headless = true
+
+[browser]
+gatherUsageStats = false
+
+[client]
+toolbarMode = "minimal"
+
+# Separate light and dark palettes keep the "follow system theme" option.
+[theme.light]
+primaryColor = "#2563eb"
+
+[theme.dark]
+primaryColor = "#60a5fa"
